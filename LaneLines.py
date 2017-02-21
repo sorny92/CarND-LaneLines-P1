@@ -66,12 +66,35 @@ def draw_lines(img, lines, color=[255, 0, 0], thickness=10):
     If you want to make the lines semi-transparent, think about combining
     this function with the weighted_img() function below
     """
+    xsize = img.shape[1]
+    ysize = img.shape[0]
+    horizont = int(0.6*ysize)
+    avgSlope1 = 1
+    avgSlope2 = 1
+    avgx1 = 0
+    avgx2 = 0
     for line in lines:
         for x1,y1,x2,y2 in line:
             slope = (x1-x2)/(y1-y2)
-            if( (slope.item() > 0.0 and slope.item() < 2.0) or
-                (slope.item() > -2.0 and slope.item() < 0.0)):
-                cv2.line(img, (x1, y1), (x2, y2), color, thickness)
+            if(slope.item() > 0.01 and slope.item() < 2.0):
+                if (avgSlope1==0):
+                    avgSlope1 = avgx1
+                else:
+                    avgSlope1 = (avgSlope1 + slope)/2
+                print('R: ', slope, '\t\t', avgSlope1)
+                x1Aux = int(x2 - avgSlope1*(y2-ysize))
+                if (avgx1==0):
+                    avgx1 = x1Aux
+                else:
+                    avgx1 = (avgx1 + x1Aux)/2
+                x2Aux = int(x1Aux + avgSlope1*(y2-ysize))
+                cv2.line(img, (x1Aux, ysize), (x2Aux, horizont), [0, 255, 255], thickness)                
+            if(slope.item() > -2.0 and slope.item() < -0.01):
+                avgSlope2 = (avgSlope2 + slope)/2
+                print('L: ', slope, '\t\t', avgSlope2)
+                x1Aux = int(x2 -avgSlope2*(y2-ysize))
+                x2Aux = int(x1Aux + avgSlope2*(y2-ysize))
+                cv2.line(img, (x1Aux, ysize), (x2Aux, horizont), [255, 0, 0], thickness)
 
 def hough_lines(img, rho, theta, threshold, min_line_len, max_line_gap):
     """
@@ -125,6 +148,7 @@ for image in test_images:
     horizont = 0.6*ysize
     horizont_margin = 0.07*xsize
     middle = xsize/2
+    
     vertices = np.array([[(left_down_corner,ysize), 
                   (middle-horizont_margin, horizont), 
                   (middle + horizont_margin, horizont), 
