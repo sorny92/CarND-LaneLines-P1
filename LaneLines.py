@@ -5,6 +5,7 @@ import matplotlib.image as mpimg
 import numpy as np
 import cv2
 import math
+from scipy.stats.stats import pearsonr
 
 def grayscale(img):
     """Applies the Grayscale transform
@@ -48,7 +49,6 @@ def region_of_interest(img, vertices):
     masked_image = cv2.bitwise_and(img, mask)
     return masked_image
 
-
 def draw_lines(img, lines, color=[255, 0, 0], thickness=10):
     """
     NOTE: this is the function you might want to use as a starting point once you want to 
@@ -69,32 +69,76 @@ def draw_lines(img, lines, color=[255, 0, 0], thickness=10):
     xsize = img.shape[1]
     ysize = img.shape[0]
     horizont = int(0.6*ysize)
-    avgSlope1 = 1
-    avgSlope2 = 1
-    avgx1 = 0
-    avgx2 = 0
+    list_x_left = []
+    list_y_left = []
+    
+    list_x_right = []
+    list_y_right = []
     for line in lines:
         for x1,y1,x2,y2 in line:
             slope = (x1-x2)/(y1-y2)
-            if(slope.item() > 0.01 and slope.item() < 2.0):
-                if (avgSlope1==0):
-                    avgSlope1 = avgx1
-                else:
-                    avgSlope1 = (avgSlope1 + slope)/2
-                print('R: ', slope, '\t\t', avgSlope1)
-                x1Aux = int(x2 - avgSlope1*(y2-ysize))
-                if (avgx1==0):
-                    avgx1 = x1Aux
-                else:
-                    avgx1 = (avgx1 + x1Aux)/2
-                x2Aux = int(x1Aux + avgSlope1*(y2-ysize))
-                cv2.line(img, (x1Aux, ysize), (x2Aux, horizont), [0, 255, 255], thickness)                
-            if(slope.item() > -2.0 and slope.item() < -0.01):
-                avgSlope2 = (avgSlope2 + slope)/2
-                print('L: ', slope, '\t\t', avgSlope2)
-                x1Aux = int(x2 -avgSlope2*(y2-ysize))
-                x2Aux = int(x1Aux + avgSlope2*(y2-ysize))
-                cv2.line(img, (x1Aux, ysize), (x2Aux, horizont), [255, 0, 0], thickness)
+            if(slope.item() > 0.0 and slope.item() < 2.0):
+                list_x_left.append(x1)
+                list_x_left.append(x2)
+                list_y_left.append(y1)
+                list_y_left.append(y2)
+                cv2.line(img, (x1, y1), (x2, y2), [0, 0, 255], thickness)
+            if(slope.item() > -2.0 and slope.item() < 0.0):
+                list_x_right.append(x1)
+                list_x_right.append(x2)
+                list_y_right.append(y1)
+                list_y_right.append(y2)
+                cv2.line(img, (x1, y1), (x2, y2), [0, 0, 255], thickness)
+     
+    dev_x_left = np.std(list_x_left)
+    dev_x_right = np.std(list_x_right)
+
+    dev_y_left = np.std(list_y_left)
+    dev_y_right = np.std(list_y_right)
+
+    mean_x_left = np.mean(list_x_left)
+    mean_x_right = np.mean(list_x_right)
+
+    mean_y_left = np.mean(list_y_left)
+    mean_y_right = np.mean(list_y_right)
+
+    correlation_left = pearsonr(list_x_left, list_y_left)
+    correlation_right = pearsonr(list_x_right, list_y_right)
+
+    slope_left = correlation_left[0] * (dev_y_left/dev_x_left)
+    slope_right = correlation_right[0] * (dev_y_right/dev_x_right)
+
+    try:
+        intercept_left= int(mean_y_left - slope_left*mean_x_left)
+        intercept_right= int(mean_y_right - slope_right*mean_x_right)
+
+        x1_left = int((ysize - intercept_left)/slope_left)
+        x1_right = int((ysize - intercept_right)/slope_right)
+
+        x2_left = int((horizont - intercept_left)/slope_left)
+        x2_right = int((horizont - intercept_right)/slope_right)
+
+        print(dev_x_left)
+        print(dev_y_left)
+        print(mean_x_left)
+        print(mean_y_left)
+        print(correlation_left)
+        print(slope_left)
+        print(intercept_left, '\n')
+        
+        print(dev_x_right)
+        print(dev_y_right)
+        print(mean_x_right)
+        print(mean_y_right)
+        print(correlation_right)
+        print(slope_right)
+        print(intercept_right, '\n')
+
+        
+        cv2.line(img, (x1_left, ysize), (x2_left, horizont), [255, 0, 0], thickness)
+        cv2.line(img, (x1_right, ysize), (x2_right, horizont), [0, 255, 0], thickness)
+    except ValueError:
+        
 
 def hough_lines(img, rho, theta, threshold, min_line_len, max_line_gap):
     """
