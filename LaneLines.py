@@ -138,6 +138,7 @@ def draw_lines(img, lines, color=[255, 0, 0], thickness=10):
         cv2.line(img, (x1_left, ysize), (x2_left, horizont), [255, 0, 0], thickness)
         cv2.line(img, (x1_right, ysize), (x2_right, horizont), [0, 255, 0], thickness)
     except ValueError:
+        pass
         
 
 def hough_lines(img, rho, theta, threshold, min_line_len, max_line_gap):
