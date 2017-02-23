@@ -1,12 +1,21 @@
 #**Finding Lane Lines on the Road** 
 [![Udacity - Self-Driving Car NanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)
 
-<img src="laneLines_thirdPass.jpg" width="480" alt="Combined Image" />
+<img src="images/goal.png" width="480" alt="Combined Image" />
 
 Overview
 ---
 In this project you will find the code and some examples to lane detection in a road using OpenCV and Python3.
 
+**test_images** You will find some images to try the code in LaneLines.py
+
+**test_videos** 
+
+**result videos** extra.mp4, white.mp4, yellow.mp4 are some videos that show how the pipeline perform.
+
+**P1.html** is an extract of P1.ipynb in case you don't have Jypiter or you don't want to execute the code in the Jupyter notebook.
+
+**P1.ipynb** has the code in a Jupyter format so you can play with it :)
 
 
 The Project
