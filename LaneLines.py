@@ -77,13 +77,13 @@ def draw_lines(img, lines, color=[255, 0, 0], thickness=10):
     for line in lines:
         for x1,y1,x2,y2 in line:
             slope = (x1-x2)/(y1-y2)
-            if(slope.item() > 0.0 and slope.item() < 2.0):
+            if(slope.item() > 0.0 and slope.item() < 2.0 and x1 > xsize*0.45):
                 list_x_left.append(x1)
                 list_x_left.append(x2)
                 list_y_left.append(y1)
                 list_y_left.append(y2)
                 cv2.line(img, (x1, y1), (x2, y2), [0, 0, 255], thickness)
-            if(slope.item() > -2.0 and slope.item() < 0.0):
+            if(slope.item() > -2.0 and slope.item() < 0.0 and x1 < xsize*0.55):
                 list_x_right.append(x1)
                 list_x_right.append(x2)
                 list_y_right.append(y1)
@@ -201,7 +201,7 @@ for image in test_images:
     image_interest = region_of_interest(edgy_image, vertices)
     plt.imshow(image_interest)
     rho = 3
-    theta = np.pi/1000
+    theta = np.pi/180
     threshold = 50
     min_line_len = 4
     max_line_gap = 10
